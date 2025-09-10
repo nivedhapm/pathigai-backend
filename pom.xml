@@ -12,7 +12,7 @@
 	<artifactId>pathigai</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>pathigai</name>
-	<description>backend application for pathigai</description>
+	<description>Springboot backend application for pathigai</description>
 	<url/>
 	<licenses>
 		<license/>
