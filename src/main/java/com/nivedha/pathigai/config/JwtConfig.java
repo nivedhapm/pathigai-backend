@@ -11,8 +11,13 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import com.nivedha.pathigai.auth.entities.User;
+import com.nivedha.pathigai.auth.entities.Profile;
+import com.nivedha.pathigai.auth.entities.Role;
 
 @Component
 @Slf4j
@@ -48,6 +53,30 @@ public class JwtConfig {
         claims.put("type", "refresh");
 
         return createToken(claims, email, refreshTokenExpiration);
+    }
+
+    public String generateAccessToken(User user) {
+        Map<String,Object> claims = new HashMap<>();
+        claims.put("userId", user.getUserId());
+        claims.put("email", user.getEmail());
+        claims.put("fullName", user.getFullName());
+        if (user.getCompany() != null) {
+            claims.put("companyId", user.getCompany().getCompanyId());
+        }
+        Profile profile = user.getPrimaryProfile();
+        Role role = user.getPrimaryRole();
+        if (profile != null) {
+            String pName = profile.getName();
+            claims.put("profile", pName);
+            claims.put("primary_profile", pName);
+            claims.put("authorities", List.of("ROLE_" + pName));
+        } else if (role != null) {
+            String rName = role.getName();
+            claims.put("role", rName);
+            claims.put("authorities", List.of("ROLE_" + rName));
+        }
+        claims.put("type", "access");
+        return createToken(claims, user.getEmail(), accessTokenExpiration);
     }
 
     private String createToken(Map<String, Object> claims, String subject, long expiration) {
@@ -120,5 +149,33 @@ public class JwtConfig {
 
     public long getRefreshTokenExpiration() {
         return refreshTokenExpiration;
+    }
+
+    // Additional methods for refresh token support
+    public Boolean validateRefreshToken(String token) {
+        try {
+            return !isTokenExpired(token) && isRefreshToken(token);
+        } catch (Exception e) {
+            log.error("Invalid refresh token: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    public String refreshAccessToken(String refreshToken, User user) {
+        if (!validateRefreshToken(refreshToken)) {
+            throw new RuntimeException("Invalid or expired refresh token");
+        }
+
+        // Generate new access token with updated user information
+        return generateAccessToken(user);
+    }
+
+    public Date getTokenExpiration(String token) {
+        return extractExpiration(token);
+    }
+
+    public long getTimeUntilExpiration(String token) {
+        Date expiration = extractExpiration(token);
+        return expiration.getTime() - System.currentTimeMillis();
     }
 }

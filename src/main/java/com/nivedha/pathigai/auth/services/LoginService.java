@@ -101,8 +101,8 @@ public class LoginService {
                     .build();
         }
 
-        // Generate JWT tokens
-        String accessToken = jwtConfig.generateAccessToken(user.getUserId(), user.getEmail(), user.getFullName());
+        // Generate JWT tokens with embedded profile/role claims
+        String accessToken = jwtConfig.generateAccessToken(user);
         String refreshToken = jwtConfig.generateRefreshToken(user.getUserId(), user.getEmail());
 
         // Create session record

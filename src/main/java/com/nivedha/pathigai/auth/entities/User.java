@@ -6,7 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 import java.util.Objects;
 
 @Entity
@@ -73,24 +72,17 @@ public class User {
     @Column(name = "phone_verified")
     private Boolean phoneVerified = false;
 
+    // SINGLE ROLE / PROFILE (no join tables)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "primary_role_id")
+    private Role primaryRole;
 
-    // Many-to-Many with Roles
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> roles;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "primary_profile_id")
+    private Profile primaryProfile;
 
-    // Many-to-Many with Profiles
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "user_profiles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "profile_id")
-    )
-    private Set<Profile> profiles;
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Override
     public boolean equals(Object o) {

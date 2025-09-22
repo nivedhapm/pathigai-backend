@@ -21,8 +21,4 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u WHERE u.userId = :userId AND u.enabled = false")
     Optional<User> findPendingUserById(@Param("userId") Integer userId);
-
-    // ADD THIS NEW METHOD to eagerly fetch collections
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles LEFT JOIN FETCH u.profiles WHERE u.userId = :userId")
-    Optional<User> findByIdWithRolesAndProfiles(@Param("userId") Integer userId);
 }
