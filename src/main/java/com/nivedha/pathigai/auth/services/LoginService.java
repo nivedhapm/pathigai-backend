@@ -101,8 +101,15 @@ public class LoginService {
                     .build();
         }
 
-        // Generate JWT tokens with embedded profile/role claims
-        String accessToken = jwtConfig.generateAccessToken(user);
+        // Generate JWT tokens with profile information
+        String accessToken = jwtConfig.generateAccessToken(
+                user.getUserId(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getRoleName(),
+                user.getProfileName(),
+                user.getCompanyId()
+        );
         String refreshToken = jwtConfig.generateRefreshToken(user.getUserId(), user.getEmail());
 
         // Create session record

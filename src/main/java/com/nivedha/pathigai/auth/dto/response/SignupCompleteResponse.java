@@ -12,11 +12,7 @@ import lombok.Builder;
 public class SignupCompleteResponse {
     private Integer userId;
     private Integer companyId;
-    private String email;
-    private String fullName;
-    private String jwtToken;
-    private String refreshToken;
-    private Long tokenExpiresIn;
     private String message;
     private Boolean success;
 }
+
