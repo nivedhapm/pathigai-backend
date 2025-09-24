@@ -39,6 +39,7 @@ public class SignupService {
     private final MaskingUtils maskingUtils;
     private final JwtConfig jwtConfig;
 //    private final RecaptchaService recaptchaService;  // Added RecaptchaService injection
+    private final SessionService sessionService;
 
     public SignupRegisterResponse registerUser(SignupRegisterRequest request) {
         log.info("Starting user registration for email: {}", request.getEmail());
@@ -137,18 +138,14 @@ public class SignupService {
         String accessToken = jwtConfig.generateAccessToken(user);
         String refreshToken = jwtConfig.generateRefreshToken(user.getUserId(), user.getEmail());
 
-        // Create session record for the new user
-        Session session = Session.builder()
-                .user(user)
-                .jwtToken(accessToken)
-                .ipAddress("signup-completion") // Could be improved to pass actual IP
-                .userAgent("signup-completion") // Could be improved to pass actual user agent
-                .expiresAt(LocalDateTime.now().plusSeconds(jwtConfig.getAccessTokenExpiration() / 1000))
-                .isActive(true)
-                .build();
+        // Create session using the enhanced session management service
+        LocalDateTime accessExpiresAt = LocalDateTime.now().plusSeconds(jwtConfig.getAccessTokenExpiration() / 1000);
+        LocalDateTime refreshExpiresAt = LocalDateTime.now().plusSeconds(jwtConfig.getRefreshTokenExpiration() / 1000);
 
-        sessionRepository.save(session);
-        log.info("Session created for newly signed up user: {}", user.getUserId());
+        Session session = sessionService.createOrReuseSession(user.getUserId(), accessToken, refreshToken,
+            accessExpiresAt, refreshExpiresAt, "signup-completion", "signup-completion");
+
+        log.info("Session created for newly signed up user: {} with ID: {}", user.getUserId(), session.getSessionId());
 
         return SignupCompleteResponse.builder()
                 .userId(user.getUserId())

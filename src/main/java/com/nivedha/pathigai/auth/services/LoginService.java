@@ -30,6 +30,7 @@ public class LoginService {
     private final PasswordEncoder passwordEncoder;
     private final JwtConfig jwtConfig;
     private final MaskingUtils maskingUtils;
+    private final SessionService sessionService; // Injecting the enhanced session management service
 
     public LoginResponse authenticateUser(LoginRequest request, String ipAddress, String userAgent) {
         log.info("Starting authentication for email: {}", request.getEmail());
@@ -105,20 +106,14 @@ public class LoginService {
         String accessToken = jwtConfig.generateAccessToken(user);
         String refreshToken = jwtConfig.generateRefreshToken(user.getUserId(), user.getEmail());
 
-        // Create session record
-        Session session = Session.builder()
-                .user(user)
-                .jwtToken(accessToken)
-                .ipAddress(ipAddress)
-                .userAgent(userAgent)
-// Expires in minutes
-                .expiresAt(LocalDateTime.now().plusMinutes(jwtConfig.getAccessTokenExpiration()))
-                
-                .isActive(true)
-                .build();
+        // Create session using the enhanced session management service
+        LocalDateTime accessExpiresAt = LocalDateTime.now().plusSeconds(jwtConfig.getAccessTokenExpiration() / 1000);
+        LocalDateTime refreshExpiresAt = LocalDateTime.now().plusSeconds(jwtConfig.getRefreshTokenExpiration() / 1000);
 
-        sessionRepository.save(session);
-        log.info("Session created for user: {}", userId);
+        Session session = sessionService.createOrReuseSession(user.getUserId(), accessToken, refreshToken,
+            accessExpiresAt, refreshExpiresAt, ipAddress, userAgent);
+
+        log.info("Session created/reused for user: {} with ID: {}", userId, session.getSessionId());
 
         return LoginResponse.builder()
                 .userId(user.getUserId())
@@ -171,14 +166,14 @@ public class LoginService {
         log.info("Processing logout request");
 
         if (jwtToken != null) {
-            // Deactivate session
-            sessionRepository.deactivateSessionByToken(jwtToken);
+            // Deactivate session using the enhanced session service
+            sessionService.removeSessionByRefreshToken(jwtToken, "USER_LOGOUT");
             log.info("Session deactivated for token");
         }
     }
 
     public void logoutAllSessions(Integer userId) {
         log.info("Logging out all sessions for user: {}", userId);
-        sessionRepository.deactivateAllUserSessions(userId);
+        sessionService.removeAllUserSessions(userId, "USER_LOGOUT");
     }
 }

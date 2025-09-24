@@ -1,5 +1,6 @@
 package com.nivedha.pathigai.auth.controllers;
 
+import com.nivedha.pathigai.auth.entities.Session;
 import com.nivedha.pathigai.auth.services.SessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +25,25 @@ public class SessionController {
     @GetMapping("/active")
     public ResponseEntity<?> getActiveSessions(@RequestParam Integer userId) {
         try {
-            List<SessionService.SessionInfo> sessions = sessionService.getUserSessions(userId);
+            List<Session> sessions = sessionService.getUserActiveSessions(userId);
+
+            // Convert Session entities to response DTOs
+            List<Map<String, Object>> sessionDtos = sessions.stream()
+                .map(session -> {
+                    Map<String, Object> dto = new HashMap<>();
+                    dto.put("sessionId", session.getSessionId());
+                    dto.put("deviceName", session.getDeviceName());
+                    dto.put("ipAddress", session.getIpAddress());
+                    dto.put("lastUsedAt", session.getLastUsedAt());
+                    dto.put("issuedAt", session.getIssuedAt());
+                    dto.put("refreshExpiresAt", session.getRefreshExpiresAt());
+                    return dto;
+                })
+                .toList();
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("activeSessions", sessions);
+            response.put("activeSessions", sessionDtos);
             response.put("sessionCount", sessions.size());
 
             return ResponseEntity.ok(response);
@@ -49,10 +64,10 @@ public class SessionController {
      */
     @DeleteMapping("/{sessionId}")
     public ResponseEntity<?> removeSession(
-            @PathVariable String sessionId,
+            @PathVariable Integer sessionId,
             @RequestParam Integer userId) {
         try {
-            sessionService.removeSession(userId, sessionId);
+            sessionService.removeSession(sessionId, "USER_LOGOUT");
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -77,7 +92,7 @@ public class SessionController {
     @DeleteMapping("/all")
     public ResponseEntity<?> removeAllSessions(@RequestParam Integer userId) {
         try {
-            sessionService.removeAllUserSessions(userId);
+            sessionService.removeAllUserSessions(userId, "USER_LOGOUT");
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);

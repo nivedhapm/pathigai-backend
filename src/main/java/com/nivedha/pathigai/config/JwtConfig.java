@@ -26,7 +26,7 @@ public class JwtConfig {
     @Value("${app.jwt.secret:pathigai-jwt-secret-key-2024-super-secure}")
     private String secret;
 
-    @Value("${app.jwt.access-token-expiration:3600000}") // 1 hour
+    @Value("${app.jwt.access-token-expiration:7200000}") // 2 hours (improved UX)
     private long accessTokenExpiration;
 
     @Value("${app.jwt.refresh-token-expiration:86400000}") // 24 hours

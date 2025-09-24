@@ -172,21 +172,24 @@ public class VerificationService {
                                                  Verification.VerificationContext context) {
         log.info("Invalidating existing {} verifications for user: {} and context: {}", type, userId, context);
 
+        // Only invalidate UNVERIFIED verifications - don't touch successful ones
         List<Verification> existingVerifications = verificationRepository.findExistingActiveVerifications(
                 userId, type, context, LocalDateTime.now()
-        );
+        ).stream()
+        .filter(v -> !v.getVerified()) // Only invalidate unverified ones
+        .toList();
 
         if (!existingVerifications.isEmpty()) {
-            log.info("Found {} existing active {} verifications to invalidate for user: {}",
+            log.info("Found {} existing UNVERIFIED {} verifications to invalidate for user: {}",
                     existingVerifications.size(), type, userId);
 
             for (Verification existing : existingVerifications) {
                 existing.setExpiresAt(LocalDateTime.now().minusMinutes(1));
                 verificationRepository.save(existing);
-                log.info("Invalidated {} verification ID: {} for user: {}", type, existing.getVerificationId(), userId);
+                log.info("Invalidated UNVERIFIED {} verification ID: {} for user: {}", type, existing.getVerificationId(), userId);
             }
         } else {
-            log.info("No existing active {} verifications found for user: {}", type, userId);
+            log.info("No existing UNVERIFIED {} verifications found for user: {}", type, userId);
         }
     }
 
