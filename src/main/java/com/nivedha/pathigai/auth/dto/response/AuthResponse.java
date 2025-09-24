@@ -1,27 +1,29 @@
 package com.nivedha.pathigai.auth.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-public class EnhancedAuthResponse {
+@NoArgsConstructor
+@AllArgsConstructor
+public class AuthResponse {
     private Boolean success;
     private String jwtToken;
     private String refreshToken;
     private UserInfo user;
+    private String message;
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class UserInfo {
         private Integer userId;
-        private String email;
-        private String fullName;
         private String role;
-        private String profile;
-        private String redirectTo;
-        private Integer companyId;
-        private String companyName;
-        private Boolean isTemporaryPassword;
+        private String profile; // Can be null for APPLICANT
+        private String redirectTo; // "/dashboard" or "/applicant-portal"
     }
 }

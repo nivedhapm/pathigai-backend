@@ -55,20 +55,8 @@ public class User {
     @JoinColumn(name = "created_by_user_id")
     private User createdByUser;
 
-    // Single role and profile relationships
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "primary_role_id")
-    private Role primaryRole;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "primary_profile_id")
-    private Profile primaryProfile;
-
     @Column(name = "last_password_reset")
     private LocalDateTime lastPasswordReset;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -84,6 +72,18 @@ public class User {
     @Column(name = "phone_verified")
     private Boolean phoneVerified = false;
 
+    // SINGLE ROLE / PROFILE (no join tables)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "primary_role_id")
+    private Role primaryRole;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "primary_profile_id")
+    private Profile primaryProfile;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -95,27 +95,6 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(userId);
-    }
-
-    // Utility methods
-    public boolean isDeleted() {
-        return deletedAt != null;
-    }
-
-    public String getRoleName() {
-        return primaryRole != null ? primaryRole.getName() : null;
-    }
-
-    public String getProfileName() {
-        return primaryProfile != null ? primaryProfile.getName() : null;
-    }
-
-    public Integer getCompanyId() {
-        return company != null ? company.getCompanyId() : null;
-    }
-
-    public String getCompanyName() {
-        return company != null ? company.getCompanyName() : null;
     }
 
     public enum UserStatus {

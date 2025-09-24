@@ -13,7 +13,6 @@ import java.util.Objects;
 @Getter
 @Setter
 public class Profile {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "profile_id")
@@ -22,11 +21,11 @@ public class Profile {
     @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description")
     private String description;
 
-    @Column(name = "hierarchy_level", nullable = false)
-    private Integer hierarchyLevel = 0;
+    @Column(name = "hierarchy_level")
+    private Integer hierarchyLevel;
 
     @Override
     public boolean equals(Object o) {
@@ -37,7 +36,5 @@ public class Profile {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(profileId, name);
-    }
+    public int hashCode() { return Objects.hash(profileId, name); }
 }

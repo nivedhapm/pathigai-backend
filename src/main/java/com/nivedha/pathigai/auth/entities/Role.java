@@ -13,7 +13,6 @@ import java.util.Objects;
 @Getter
 @Setter
 public class Role {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
@@ -21,7 +20,6 @@ public class Role {
 
     @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;
-
 
     @Override
     public boolean equals(Object o) {
@@ -32,7 +30,5 @@ public class Role {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(roleId, name);
-    }
+    public int hashCode() { return Objects.hash(roleId, name); }
 }

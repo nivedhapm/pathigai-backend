@@ -15,13 +15,14 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     // CORS Configuration from properties
-    @Value("${app.security.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
+    @Value("${app.security.cors.allowed-origins:http://localhost:3000,http://localhost:5173,https://pathigai.vercel.app/}")
     private String allowedOrigins;
 
     @Value("${app.security.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}")
@@ -47,6 +48,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/signup/**").permitAll()
                         .requestMatchers("/api/v1/verification/**").permitAll()
                         .requestMatchers("/api/v1/login/**").permitAll()
+                        .requestMatchers("/api/v1/auth/refresh-token").permitAll()
+                        .requestMatchers("/api/v1/auth/token-status").authenticated()
                         .requestMatchers("/api/v1/password-reset/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/info").permitAll()
@@ -69,29 +72,31 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Parse allowed origins from properties
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        configuration.setAllowedOrigins(origins);
+        // Trim and sanitize origins (original list may contain leading spaces)
+        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+        configuration.setAllowedOrigins(origins); // exact matching after trim
 
-        // Parse allowed methods from properties
-        List<String> methods = Arrays.asList(allowedMethods.split(","));
+        List<String> methods = Arrays.stream(allowedMethods.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
         configuration.setAllowedMethods(methods);
 
-        // Parse allowed headers from properties
         if ("*".equals(allowedHeaders.trim())) {
             configuration.addAllowedHeader("*");
         } else {
-            List<String> headers = Arrays.asList(allowedHeaders.split(","));
+            List<String> headers = Arrays.stream(allowedHeaders.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
             configuration.setAllowedHeaders(headers);
         }
 
-        // Set allow credentials from properties
         configuration.setAllowCredentials(allowCredentials);
-
-        // Set max age for preflight requests
         configuration.setMaxAge(3600L);
-
-        // Common headers that should always be allowed
         configuration.addExposedHeader("Authorization");
         configuration.addExposedHeader("Content-Type");
         configuration.addExposedHeader("Accept");

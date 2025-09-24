@@ -114,6 +114,44 @@ public class SessionService {
     }
 
     /**
+     * Update session with new token information (for refresh token functionality)
+     */
+    public void updateSession(Integer userId, String newJwtToken, String ipAddress, String userAgent) {
+        Map<String, SessionInfo> sessions = userSessions.get(userId);
+        if (sessions != null && !sessions.isEmpty()) {
+            // Update the most recent session for this user
+            SessionInfo mostRecent = sessions.values().stream()
+                    .max((s1, s2) -> s1.getLastAccessed().compareTo(s2.getLastAccessed()))
+                    .orElse(null);
+
+            if (mostRecent != null) {
+                mostRecent.setLastAccessed(LocalDateTime.now());
+                mostRecent.updateToken(newJwtToken);
+                log.info("Updated session {} for user {} with new token", mostRecent.getSessionId(), userId);
+            }
+        } else {
+            // If no existing session, create a new one
+            String deviceInfo = userAgent + " from " + ipAddress;
+            createSession(userId, deviceInfo);
+            log.info("Created new session for user {} during token refresh", userId);
+        }
+    }
+
+    /**
+     * Find session by JWT token
+     */
+    public SessionInfo findSessionByToken(String jwtToken) {
+        for (Map<String, SessionInfo> userSessions : this.userSessions.values()) {
+            for (SessionInfo session : userSessions.values()) {
+                if (jwtToken.equals(session.getCurrentToken())) {
+                    return session;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Remove oldest session from user's sessions
      */
     private void removeOldestSession(Map<String, SessionInfo> sessions) {
@@ -177,6 +215,7 @@ public class SessionService {
         private final String deviceInfo;
         private final LocalDateTime createdAt;
         private LocalDateTime lastAccessed;
+        private String currentToken; // Add field for current token
 
         public SessionInfo(String sessionId, Integer userId, String deviceInfo, LocalDateTime createdAt) {
             this.sessionId = sessionId;
@@ -193,5 +232,8 @@ public class SessionService {
         public LocalDateTime getCreatedAt() { return createdAt; }
         public LocalDateTime getLastAccessed() { return lastAccessed; }
         public void setLastAccessed(LocalDateTime lastAccessed) { this.lastAccessed = lastAccessed; }
+
+        public String getCurrentToken() { return currentToken; } // Getter for current token
+        public void updateToken(String newToken) { this.currentToken = newToken; } // Method to update token
     }
 }
