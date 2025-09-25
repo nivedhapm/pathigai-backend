@@ -142,6 +142,22 @@ public class SessionService {
     }
 
     /**
+     * Remove session by access token (for logout)
+     */
+    @Transactional
+    public void removeSessionByAccessToken(String accessToken, String reason) {
+        String hashedToken = sessionManagementService.hashToken(accessToken);
+        int updated = sessionRepository.deactivateSessionByAccessToken(hashedToken,
+            LocalDateTime.now(), Session.RevokeReason.valueOf(reason));
+
+        if (updated > 0) {
+            log.info("Removed session by access token due to: {}", reason);
+        } else {
+            log.warn("No active session found for provided access token");
+        }
+    }
+
+    /**
      * Remove all sessions for a user (logout from all devices)
      */
     @Transactional

@@ -166,8 +166,8 @@ public class LoginService {
         log.info("Processing logout request");
 
         if (jwtToken != null) {
-            // Deactivate session using the enhanced session service
-            sessionService.removeSessionByRefreshToken(jwtToken, "USER_LOGOUT");
+            // Deactivate session using access token (not refresh token)
+            sessionService.removeSessionByAccessToken(jwtToken, "USER_LOGOUT");
             log.info("Session deactivated for token");
         }
     }

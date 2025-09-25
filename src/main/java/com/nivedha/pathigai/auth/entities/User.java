@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -27,6 +28,16 @@ public class User {
 
     @Column(name = "phone", nullable = false, length = 20)
     private String phone;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
+
+    @Column(name = "work_location", length = 200)
+    private String workLocation;
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
@@ -99,5 +110,9 @@ public class User {
 
     public enum UserStatus {
         ACTIVE, INACTIVE, SUSPENDED, DELETED
+    }
+
+    public enum Gender {
+        MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY
     }
 }

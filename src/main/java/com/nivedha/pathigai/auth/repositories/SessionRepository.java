@@ -51,6 +51,12 @@ public interface SessionRepository extends JpaRepository<Session, Integer> {
     @Query("UPDATE Session s SET s.isActive = false, s.revokedAt = :revokedAt, s.revokeReason = :reason WHERE s.refreshTokenHash = :refreshTokenHash")
     int deactivateSessionByRefreshToken(@Param("refreshTokenHash") String refreshTokenHash, @Param("revokedAt") LocalDateTime revokedAt, @Param("reason") Session.RevokeReason reason);
 
+    // Deactivate session by access token (for logout)
+    @Modifying
+    @Transactional
+    @Query("UPDATE Session s SET s.isActive = false, s.revokedAt = :revokedAt, s.revokeReason = :reason WHERE s.accessTokenHash = :accessTokenHash")
+    int deactivateSessionByAccessToken(@Param("accessTokenHash") String accessTokenHash, @Param("revokedAt") LocalDateTime revokedAt, @Param("reason") Session.RevokeReason reason);
+
     // Deactivate session by ID
     @Modifying
     @Transactional

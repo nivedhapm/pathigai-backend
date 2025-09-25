@@ -29,11 +29,10 @@ public interface UserRepository extends JpaRepository<User, Integer> {
            "(:role IS NULL OR u.primaryRole.name = :role) AND " +
            "(:profile IS NULL OR u.primaryProfile.name = :profile) AND " +
            "(:companyId IS NULL OR u.company.companyId = :companyId) AND " +
-           "u.company.companyId = :requesterCompanyId AND u.enabled = true")
+           "u.userStatus != 'DELETED'")
     List<User> findUsersWithFilters(@Param("role") String role,
                                    @Param("profile") String profile,
-                                   @Param("companyId") Integer companyId,
-                                   @Param("requesterCompanyId") Integer requesterCompanyId);
+                                   @Param("companyId") Integer companyId);
 
     List<User> findByPrimaryRoleNameAndCompanyCompanyIdAndEnabledTrue(String roleName, Integer companyId);
 
@@ -42,4 +41,12 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u FROM User u WHERE u.primaryProfile.hierarchyLevel <= :hierarchyLevel AND u.company.companyId = :companyId AND u.enabled = true")
     List<User> findByProfileHierarchyLevelLessThanEqual(@Param("hierarchyLevel") Integer hierarchyLevel,
                                                        @Param("companyId") Integer companyId);
+
+    Optional<User> findByPhone(String phone);
+
+    // Get user with profile and role for authentication
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.primaryProfile LEFT JOIN FETCH u.primaryRole WHERE u.email = :email AND u.userStatus = :status")
+    Optional<User> findByEmailAndUserStatusWithProfileAndRole(@Param("email") String email, @Param("status") User.UserStatus userStatus);
+
+    List<User> findByFullNameIn(List<String> fullNames);
 }

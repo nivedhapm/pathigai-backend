@@ -15,4 +15,6 @@ public interface ProfileRepository extends JpaRepository<Profile, Integer> {
     List<Profile> findAllByOrderByHierarchyLevelAsc();
 
     List<Profile> findByHierarchyLevelLessThanEqual(Integer hierarchyLevel);
+
+    List<Profile> findByHierarchyLevelGreaterThanEqualOrderByHierarchyLevel(Integer hierarchyLevel);
 }
