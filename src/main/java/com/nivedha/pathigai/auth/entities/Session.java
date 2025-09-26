@@ -8,8 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "sessions",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "device_fingerprint"}))
+@Table(name = "sessions")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -93,7 +92,9 @@ public class Session {
         TOKEN_REFRESH,
         SECURITY_BREACH,
         MAX_SESSIONS_EXCEEDED,
-        ADMIN_REVOKE
+        ADMIN_REVOKE,
+        EXPIRED,
+        NEW_LOGIN
     }
 
     // Helper methods

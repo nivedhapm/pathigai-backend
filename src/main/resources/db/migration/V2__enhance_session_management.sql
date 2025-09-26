@@ -34,16 +34,17 @@ CREATE TABLE sessions (
   -- Session status
   is_active BOOLEAN DEFAULT 1,
   revoked_at DATETIME NULL,
-  revoke_reason ENUM('USER_LOGOUT', 'TOKEN_REFRESH', 'SECURITY_BREACH', 'MAX_SESSIONS_EXCEEDED', 'ADMIN_REVOKE') NULL,
+  revoke_reason ENUM('USER_LOGOUT', 'TOKEN_REFRESH', 'SECURITY_BREACH', 'MAX_SESSIONS_EXCEEDED', 'ADMIN_REVOKE', 'EXPIRED', 'NEW_LOGIN') NULL,
 
   -- Timestamps
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-  -- Constraints and indexes
-  UNIQUE KEY uk_user_device (user_id, device_fingerprint), -- One session per device
+  -- Indexes for performance (REMOVED unique constraint on user_device to allow session history)
+  INDEX idx_user_device (user_id, device_fingerprint), -- Non-unique for history
   INDEX idx_user_active (user_id, is_active, last_used_at),
-  INDEX idx_refresh_token (refresh_token_hash),
+  INDEX idx_refresh_token (refresh_token_hash, is_active),
+  INDEX idx_access_token (access_token_hash, is_active),
   INDEX idx_session_cleanup (is_active, refresh_expires_at),
 
   FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
