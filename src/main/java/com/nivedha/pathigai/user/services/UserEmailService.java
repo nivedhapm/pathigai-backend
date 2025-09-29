@@ -222,12 +222,55 @@ public class UserEmailService {
             if (!pendingEmails.isEmpty()) {
                 log.info("📬 Processing {} pending emails", pendingEmails.size());
 
+                int successCount = 0;
+                int failureCount = 0;
+
                 for (EmailOutbox email : pendingEmails) {
+                    try {
+                        sendQueuedEmail(email);
+                        if (email.getSent()) {
+                            successCount++;
+                        } else {
+                            failureCount++;
+                        }
+                    } catch (Exception e) {
+                        failureCount++;
+                        log.error("❌ Failed to send email to {}: {}", email.getRecipientEmail(), e.getMessage());
+                    }
+                }
+
+                log.info("🎉 Email processing completed: {} sent successfully, {} failed", successCount, failureCount);
+            } else {
+                log.debug("📪 No pending emails to process");
+            }
+        } catch (Exception e) {
+            log.error("❌ Error processing pending emails: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Get count of pending emails for monitoring
+     */
+    public long getPendingEmailCount() {
+        return emailOutboxRepository.findBySentFalseAndRetryCountLessThanOrderByCreatedAtAsc(3).size();
+    }
+
+    /**
+     * Process emails for a specific user (useful for bulk operations)
+     */
+    @Transactional
+    public void processEmailsForUser(Integer userId) {
+        try {
+            List<EmailOutbox> userEmails = emailOutboxRepository.findByRelatedUserUserIdAndEmailType(
+                userId, EmailOutbox.EmailType.INVITATION);
+
+            for (EmailOutbox email : userEmails) {
+                if (!email.getSent() && email.getRetryCount() < 3) {
                     sendQueuedEmail(email);
                 }
             }
         } catch (Exception e) {
-            log.error("❌ Error processing pending emails: {}", e.getMessage(), e);
+            log.error("❌ Error processing emails for user {}: {}", userId, e.getMessage(), e);
         }
     }
 }

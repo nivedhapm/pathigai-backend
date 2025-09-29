@@ -57,12 +57,6 @@ public interface SessionRepository extends JpaRepository<Session, Integer> {
     @Query("UPDATE Session s SET s.isActive = false, s.revokedAt = :revokedAt, s.revokeReason = :reason WHERE s.accessTokenHash = :accessTokenHash")
     int deactivateSessionByAccessToken(@Param("accessTokenHash") String accessTokenHash, @Param("revokedAt") LocalDateTime revokedAt, @Param("reason") Session.RevokeReason reason);
 
-    // Deactivate existing active sessions for a user-device combination (prevents duplicate key errors)
-    @Modifying
-    @Transactional
-    @Query("UPDATE Session s SET s.isActive = false, s.revokedAt = :revokedAt, s.revokeReason = :reason WHERE s.user.userId = :userId AND s.deviceFingerprint = :deviceFingerprint AND s.isActive = true")
-    int deactivateExistingUserDeviceSessions(@Param("userId") Integer userId, @Param("deviceFingerprint") String deviceFingerprint, @Param("revokedAt") LocalDateTime revokedAt, @Param("reason") Session.RevokeReason reason);
-
     // Deactivate session by ID
     @Modifying
     @Transactional

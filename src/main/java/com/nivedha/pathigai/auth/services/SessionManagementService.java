@@ -116,67 +116,87 @@ public class SessionManagementService {
             log.info("Creating/reusing session for user {} with device fingerprint: {}",
                 request.getUserId(), deviceFingerprint);
 
-            // First, deactivate any existing active sessions for this user-device combination
-            // This prevents the duplicate key issue while preserving audit history
-            int deactivatedSessions = sessionRepository.deactivateExistingUserDeviceSessions(
-                request.getUserId(), deviceFingerprint, LocalDateTime.now(), Session.RevokeReason.NEW_LOGIN);
+            // Check if user already has an active session on this device
+            Optional<Session> existingSessionOpt = sessionRepository.findByUser_UserIdAndDeviceFingerprintAndIsActiveTrue(
+                request.getUserId(), deviceFingerprint);
 
-            if (deactivatedSessions > 0) {
-                log.info("Deactivated {} existing sessions for user {} on device {} due to new login",
-                    deactivatedSessions, request.getUserId(), deviceFingerprint.substring(0, 8));
-            }
+            if (existingSessionOpt.isPresent()) {
+                // Reuse existing session - update tokens and timestamps
+                Session existingSession = existingSessionOpt.get();
 
-            // Check if user has reached max session limit across all devices
-            Long activeSessionCount = sessionRepository.countActiveSessionsByUserId(
-                request.getUserId(), LocalDateTime.now());
+                existingSession.setAccessTokenHash(hashToken(request.getAccessToken()));
+                existingSession.setRefreshTokenHash(hashToken(request.getRefreshToken()));
+                existingSession.setRefreshTokenVersion(existingSession.getRefreshTokenVersion() + 1);
+                existingSession.setAccessExpiresAt(request.getAccessExpiresAt());
+                existingSession.setRefreshExpiresAt(request.getRefreshExpiresAt());
+                existingSession.setLastUsedAt(LocalDateTime.now());
+                existingSession.setIpAddress(request.getIpAddress());
+                existingSession.setUserAgent(request.getUserAgent());
 
-            if (activeSessionCount >= maxConcurrentSessions) {
-                // Revoke oldest session across all devices
-                List<Session> oldestSessions = sessionRepository.findOldestActiveSessionsByUserId(
+                Session savedSession = sessionRepository.save(existingSession);
+
+                log.info("Session REUSED for user {} with ID: {}", request.getUserId(), savedSession.getSessionId());
+
+                return SessionResult.builder()
+                    .sessionId(savedSession.getSessionId())
+                    .action("REUSED")
+                    .deviceFingerprint(deviceFingerprint)
+                    .deviceName(deviceName)
+                    .success(true)
+                    .build();
+            } else {
+                // Check if user has reached max session limit
+                Long activeSessionCount = sessionRepository.countActiveSessionsByUserId(
                     request.getUserId(), LocalDateTime.now());
 
-                if (!oldestSessions.isEmpty()) {
-                    Session oldestSession = oldestSessions.get(0);
-                    sessionRepository.deactivateSessionById(oldestSession.getSessionId(),
-                        LocalDateTime.now(), Session.RevokeReason.MAX_SESSIONS_EXCEEDED);
+                if (activeSessionCount >= maxConcurrentSessions) {
+                    // Revoke oldest session
+                    List<Session> oldestSessions = sessionRepository.findOldestActiveSessionsByUserId(
+                        request.getUserId(), LocalDateTime.now());
 
-                    log.info("Revoked oldest session {} for user {} due to max session limit",
-                        oldestSession.getSessionId(), request.getUserId());
+                    if (!oldestSessions.isEmpty()) {
+                        Session oldestSession = oldestSessions.get(0);
+                        sessionRepository.deactivateSessionById(oldestSession.getSessionId(),
+                            LocalDateTime.now(), Session.RevokeReason.MAX_SESSIONS_EXCEEDED);
+
+                        log.info("Revoked oldest session {} for user {} due to max session limit",
+                            oldestSession.getSessionId(), request.getUserId());
+                    }
                 }
+
+                // Create new session
+                User user = userRepository.findById(request.getUserId())
+                    .orElseThrow(() -> new RuntimeException("User not found: " + request.getUserId()));
+
+                Session newSession = Session.builder()
+                    .user(user)
+                    .deviceFingerprint(deviceFingerprint)
+                    .deviceName(deviceName)
+                    .ipAddress(request.getIpAddress())
+                    .userAgent(request.getUserAgent())
+                    .accessTokenHash(hashToken(request.getAccessToken()))
+                    .refreshTokenHash(hashToken(request.getRefreshToken()))
+                    .refreshTokenVersion(1)
+                    .accessExpiresAt(request.getAccessExpiresAt())
+                    .refreshExpiresAt(request.getRefreshExpiresAt())
+                    .lastUsedAt(LocalDateTime.now())
+                    .isActive(true)
+                    .build();
+
+                Session savedSession = sessionRepository.save(newSession);
+
+                log.info("Session CREATED for user {} with ID: {}", request.getUserId(), savedSession.getSessionId());
+
+                return SessionResult.builder()
+                    .sessionId(savedSession.getSessionId())
+                    .action("CREATED")
+                    .deviceFingerprint(deviceFingerprint)
+                    .deviceName(deviceName)
+                    .success(true)
+                    .build();
             }
-
-            // Always create new session (no more unique constraint blocking us)
-            User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found: " + request.getUserId()));
-
-            Session newSession = Session.builder()
-                .user(user)
-                .deviceFingerprint(deviceFingerprint)
-                .deviceName(deviceName)
-                .ipAddress(request.getIpAddress())
-                .userAgent(request.getUserAgent())
-                .accessTokenHash(hashToken(request.getAccessToken()))
-                .refreshTokenHash(hashToken(request.getRefreshToken()))
-                .refreshTokenVersion(1)
-                .accessExpiresAt(request.getAccessExpiresAt())
-                .refreshExpiresAt(request.getRefreshExpiresAt())
-                .lastUsedAt(LocalDateTime.now())
-                .isActive(true)
-                .build();
-
-            Session savedSession = sessionRepository.save(newSession);
-            log.info("Session CREATED for user {} with ID: {}", request.getUserId(), savedSession.getSessionId());
-
-            return SessionResult.builder()
-                .sessionId(savedSession.getSessionId())
-                .action("CREATED")
-                .deviceFingerprint(deviceFingerprint)
-                .deviceName(deviceName)
-                .success(true)
-                .build();
-
         } catch (Exception e) {
-            log.error("Error creating session for user {}: {}", request.getUserId(), e.getMessage(), e);
+            log.error("Error creating/reusing session for user {}: {}", request.getUserId(), e.getMessage(), e);
             return SessionResult.builder()
                 .success(false)
                 .errorMessage("Internal server error during session creation: " + e.getMessage())
