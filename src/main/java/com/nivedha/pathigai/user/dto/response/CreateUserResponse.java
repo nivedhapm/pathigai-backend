@@ -13,13 +13,13 @@ public class CreateUserResponse {
 
     private boolean success;
     private String message;
-    private Integer userId;
+    private Long userId;
     private UserResponse user;
 
-    public static CreateUserResponse success(Integer userId, UserResponse user) {
+    public static CreateUserResponse success(String message, Long userId, UserResponse user) {
         return CreateUserResponse.builder()
                 .success(true)
-                .message("User created successfully")
+                .message(message)
                 .userId(userId)
                 .user(user)
                 .build();

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RoleResponse {
 
-    private Integer roleId;
-    private String key;
+    private Long id;
+    private String name;
     private String label;
 }

@@ -1,25 +1,25 @@
 package com.nivedha.pathigai.user.entities;
 
-import com.nivedha.pathigai.auth.entities.User;
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "email_outbox")
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Getter
-@Setter
 public class EmailOutbox {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "email_id")
-    private Integer emailId;
+    private Long emailId;
 
     @Column(name = "recipient_email", nullable = false, length = 100)
     private String recipientEmail;
@@ -34,15 +34,14 @@ public class EmailOutbox {
     @Column(name = "email_type", nullable = false)
     private EmailType emailType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "related_user_id")
-    private User relatedUser;
+    @Column(name = "related_user_id")
+    private Long relatedUserId;
 
     @Column(name = "related_invitation_id")
-    private Integer relatedInvitationId;
+    private Long relatedInvitationId;
 
+    @Column(name = "sent", nullable = false)
     @Builder.Default
-    @Column(name = "sent")
     private Boolean sent = false;
 
     @Column(name = "sent_at")
@@ -51,15 +50,42 @@ public class EmailOutbox {
     @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
 
+    @Column(name = "retry_count", nullable = false)
     @Builder.Default
-    @Column(name = "retry_count")
     private Integer retryCount = 0;
 
-    @CreationTimestamp
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum EmailType {
-        INVITATION, PASSWORD_RESET, NOTIFICATION
+        INVITATION,
+        PASSWORD_RESET,
+        NOTIFICATION
+    }
+
+    // Helper methods
+    public boolean isDelivered() {
+        return Boolean.TRUE.equals(sent) && sentAt != null;
+    }
+
+    public boolean hasFailed() {
+        return errorMessage != null && !errorMessage.isEmpty();
+    }
+
+    public boolean canRetry() {
+        return retryCount < 3 && !isDelivered();
+    }
+
+    public void markAsSent() {
+        this.sent = true;
+        this.sentAt = LocalDateTime.now();
+        this.errorMessage = null;
+    }
+
+    public void markAsFailed(String error) {
+        this.sent = false;
+        this.errorMessage = error;
+        this.retryCount++;
     }
 }
