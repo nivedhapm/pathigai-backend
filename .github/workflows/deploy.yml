@@ -27,7 +27,7 @@ jobs:
         key: ${{ secrets.DROPLET_SSH_KEY }}
         port: 22
         script: |
-          cd /root/pathigai-backend
+          cd ${{ secrets.REPO_DIR }}
           git pull origin main
           pkill -f 'java -jar' || true
           nohup java -jar target/pathigai-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
