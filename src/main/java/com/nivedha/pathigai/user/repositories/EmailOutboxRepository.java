@@ -10,44 +10,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface EmailOutboxRepository extends JpaRepository<EmailOutbox, Long> {
+public interface EmailOutboxRepository extends JpaRepository<EmailOutbox, Integer> {
 
-    /**
-     * Find emails that need to be sent (not sent and can retry)
-     */
-    @Query("SELECT e FROM EmailOutbox e WHERE e.sent = false AND e.retryCount < 3")
-    List<EmailOutbox> findPendingEmails();
+    List<EmailOutbox> findBySentFalseAndRetryCountLessThanOrderByCreatedAtAsc(Integer maxRetries);
 
-    /**
-     * Find emails by type
-     */
-    List<EmailOutbox> findByEmailType(EmailOutbox.EmailType emailType);
+    @Query("SELECT e FROM EmailOutbox e WHERE e.sent = false AND e.createdAt > :cutoffTime ORDER BY e.createdAt ASC")
+    List<EmailOutbox> findPendingEmails(@Param("cutoffTime") LocalDateTime cutoffTime);
 
-    /**
-     * Find emails by recipient
-     */
-    List<EmailOutbox> findByRecipientEmailOrderByCreatedAtDesc(String recipientEmail);
-
-    /**
-     * Find emails for a specific user
-     */
-    List<EmailOutbox> findByRelatedUserIdOrderByCreatedAtDesc(Long userId);
-
-    /**
-     * Find failed emails that can be retried
-     */
-    @Query("SELECT e FROM EmailOutbox e WHERE e.sent = false AND e.retryCount < 3 AND e.createdAt > :since")
-    List<EmailOutbox> findRetryableEmails(@Param("since") LocalDateTime since);
-
-    /**
-     * Count pending emails
-     */
-    @Query("SELECT COUNT(e) FROM EmailOutbox e WHERE e.sent = false")
-    long countPendingEmails();
-
-    /**
-     * Count sent emails in the last 24 hours
-     */
-    @Query("SELECT COUNT(e) FROM EmailOutbox e WHERE e.sent = true AND e.sentAt > :since")
-    long countRecentSentEmails(@Param("since") LocalDateTime since);
+    List<EmailOutbox> findByRelatedUserUserIdAndEmailType(Integer userId, EmailOutbox.EmailType emailType);
 }

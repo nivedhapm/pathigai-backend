@@ -1,13 +1,13 @@
 package com.nivedha.pathigai.user.dto.request;
 
-import com.nivedha.pathigai.user.dto.request.CreateUserRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 
 @Data
@@ -17,6 +17,7 @@ import java.util.List;
 public class BulkCreateUsersRequest {
 
     @NotEmpty(message = "Users list cannot be empty")
+    @Size(max = 1000, message = "Cannot process more than 1000 users at once")
     @Valid
     private List<CreateUserRequest> users;
 }

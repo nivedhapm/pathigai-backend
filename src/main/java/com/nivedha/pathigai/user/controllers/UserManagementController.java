@@ -3,7 +3,6 @@ package com.nivedha.pathigai.user.controllers;
 import com.nivedha.pathigai.auth.entities.User;
 import com.nivedha.pathigai.user.dto.request.CreateUserRequest;
 import com.nivedha.pathigai.user.dto.request.BulkCreateUsersRequest;
-import com.nivedha.pathigai.user.dto.request.UpdateUserRequest;
 import com.nivedha.pathigai.user.dto.response.*;
 import com.nivedha.pathigai.user.services.UserManagementService;
 import jakarta.validation.Valid;
@@ -91,145 +90,8 @@ public class UserManagementController {
     }
 
     /**
-     * Get users with search and filtering
-     * GET /api/v1/users?search=&role=&profile=&page=0&size=10
-     */
-    @GetMapping
-    public ResponseEntity<UserListResponse> getUsers(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String role,
-            @RequestParam(required = false) String profile,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal UserDetails userDetails) {
-
-        try {
-            log.info("📋 Get users request - search: '{}', role: '{}', profile: '{}', page: {}, size: {}",
-                    search, role, profile, page, size);
-
-            User currentUser = getCurrentUser(userDetails);
-            UserListResponse response = userManagementService.getUsers(search, role, profile, page, size, currentUser);
-
-            if (response.isSuccess()) {
-                log.info("✅ Users retrieved successfully: {} users found", response.getUsers().size());
-                return ResponseEntity.ok(response);
-            } else {
-                log.warn("❌ Failed to retrieve users: {}", response.getMessage());
-                return ResponseEntity.badRequest().body(response);
-            }
-
-        } catch (Exception e) {
-            log.error("❌ Error getting users: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(UserListResponse.failure("Internal server error: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * Get user by ID
-     * GET /api/v1/users/{userId}
-     */
-    @GetMapping("/{userId}")
-    public ResponseEntity<Map<String, Object>> getUserById(
-            @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-
-        try {
-            log.info("👤 Get user by ID request: {}", userId);
-
-            User currentUser = getCurrentUser(userDetails);
-
-            // This would be implemented in the service if needed
-            // UserResponse user = userManagementService.getUserById(userId, currentUser);
-
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "User details endpoint - to be implemented"
-            ));
-
-        } catch (Exception e) {
-            log.error("❌ Error getting user {}: {}", userId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of(
-                        "success", false,
-                        "message", "Error retrieving user: " + e.getMessage()
-                    ));
-        }
-    }
-
-    /**
-     * Update user
-     * PUT /api/v1/users/{userId}
-     */
-    @PutMapping("/{userId}")
-    public ResponseEntity<CreateUserResponse> updateUser(
-            @PathVariable Long userId,
-            @Valid @RequestBody UpdateUserRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
-
-        try {
-            log.info("🔄 Update user request for ID: {}", userId);
-
-            User currentUser = getCurrentUser(userDetails);
-            CreateUserResponse response = userManagementService.updateUser(userId, request, currentUser);
-
-            if (response.isSuccess()) {
-                log.info("✅ User updated successfully: ID {}", userId);
-                return ResponseEntity.ok(response);
-            } else {
-                log.warn("❌ User update failed: {}", response.getMessage());
-                return ResponseEntity.badRequest().body(response);
-            }
-
-        } catch (Exception e) {
-            log.error("❌ Error updating user {}: {}", userId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(CreateUserResponse.failure("Internal server error: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * Delete user (soft delete)
-     * DELETE /api/v1/users/{userId}
-     */
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Map<String, Object>> deleteUser(
-            @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-
-        try {
-            log.info("🗑️ Delete user request for ID: {}", userId);
-
-            User currentUser = getCurrentUser(userDetails);
-            boolean deleted = userManagementService.deleteUser(userId, currentUser);
-
-            if (deleted) {
-                log.info("✅ User deleted successfully: ID {}", userId);
-                return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "User deleted successfully"
-                ));
-            } else {
-                log.warn("❌ User deletion failed: ID {}", userId);
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "Failed to delete user. You may not have permission or user not found."
-                ));
-            }
-
-        } catch (Exception e) {
-            log.error("❌ Error deleting user {}: {}", userId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of(
-                        "success", false,
-                        "message", "Internal server error: " + e.getMessage()
-                    ));
-        }
-    }
-
-    /**
      * Get profiles that current user can create
-     * GET /api/v1/users/profiles/allowed
+     * GET /api/v1/profiles/allowed
      */
     @GetMapping("/profiles/allowed")
     public ResponseEntity<Map<String, Object>> getAllowedCreationProfiles(
@@ -256,7 +118,7 @@ public class UserManagementController {
 
     /**
      * Get roles for a specific profile
-     * GET /api/v1/users/roles/for-profile/{profile}
+     * GET /api/v1/roles/for-profile/{profile}
      */
     @GetMapping("/roles/for-profile/{profile}")
     public ResponseEntity<Map<String, Object>> getRolesForProfile(
@@ -292,16 +154,15 @@ public class UserManagementController {
             boolean available = userManagementService.isEmailAvailable(email);
 
             return ResponseEntity.ok(Map.of(
-                "success", true,
                 "available", available,
-                "message", available ? "Email is available" : "Email is already in use"
+                "message", available ? "Email is available" : "Email already exists"
             ));
 
         } catch (Exception e) {
-            log.error("❌ Error validating email {}: {}", email, e.getMessage(), e);
+            log.error("❌ Error validating email: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
-                        "success", false,
+                        "available", false,
                         "message", "Error validating email: " + e.getMessage()
                     ));
         }
@@ -319,16 +180,15 @@ public class UserManagementController {
             boolean available = userManagementService.isPhoneAvailable(phone);
 
             return ResponseEntity.ok(Map.of(
-                "success", true,
                 "available", available,
-                "message", available ? "Phone is available" : "Phone is already in use"
+                "message", available ? "Phone number is available" : "Phone number already exists"
             ));
 
         } catch (Exception e) {
-            log.error("❌ Error validating phone {}: {}", phone, e.getMessage(), e);
+            log.error("❌ Error validating phone: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
-                        "success", false,
+                        "available", false,
                         "message", "Error validating phone: " + e.getMessage()
                     ));
         }

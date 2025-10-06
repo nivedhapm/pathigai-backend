@@ -5,15 +5,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProfileResponse {
 
-    private Long id;
-    private String name;
+    private Integer profileId;
+    private String key;
     private String label;
+    private Integer level;
     private String description;
-    private int hierarchyLevel;
 }
