@@ -16,7 +16,7 @@ fi
 echo "Starting application with injected configuration..."
 nohup java -jar ${APP_JAR} \
   --spring.profiles.active=prod \
-  --spring.datasource.url="${SPRING_DATASOURCE_URL}" \
+  --spring.datasource.url="jdbc:mysql://localhost:3306/pathigai_app?useSSL=false&serverTimezone=UTC"\
   --spring.datasource.username="${SPRING_DATASOURCE_USERNAME}" \
   --spring.datasource.password="${SPRING_DATASOURCE_PASSWORD}" \
   --spring.datasource.driver-class-name="com.mysql.cj.jdbc.Driver" \
