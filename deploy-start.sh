@@ -25,6 +25,11 @@ nohup java -jar ${APP_JAR} \
   --app.jwt.secret="${JWT_SECRET}" \
   --spring.mail.username="${EMAIL_USER}" \
   --spring.mail.password="${EMAIL_PASSWORD}" \
+  --spring.mail.properties.mail.smtp.connectiontimeout=90000 \
+  --spring.mail.properties.mail.smtp.timeout=90000 \
+  --spring.mail.properties.mail.smtp.writetimeout=90000 \
+  --app.sendgrid.api-key="${SENDGRID_API_KEY}" \
+  --app.sendgrid.enabled="${SENDGRID_ENABLED}" \
   --app.sms.fast2sms.api-key="${FAST2SMS_API_KEY}" \
   --app.sms.fast2sms.sender-id="${FAST2SMS_SENDER_ID}" \
   --app.recaptcha.site-key="${RECAPTCHA_SITE_KEY}" \

@@ -1,7 +1,7 @@
 package com.nivedha.pathigai.auth.services.external;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -14,11 +14,11 @@ import jakarta.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final SendGridEmailService sendGridEmailService;
 
     @Value("${app.mail.from:noreply@pathigai.com}")
     private String fromEmail;
@@ -32,14 +32,36 @@ public class EmailService {
     @Value("${app.mail.use-mime:true}")
     private boolean useMimeMessage;
 
+    @Value("${app.sendgrid.enabled:false}")
+    private boolean sendGridEnabled;
+
+    @Autowired
+    public EmailService(JavaMailSender mailSender, SendGridEmailService sendGridEmailService) {
+        this.mailSender = mailSender;
+        this.sendGridEmailService = sendGridEmailService;
+    }
+
     public void sendEmail(String to, String subject, String text) {
         if (!emailEnabled) {
             log.info("Email service disabled. Would send email to {}: Subject: {}, Body: {}", to, subject, text);
             return;
         }
 
+        // Try SendGrid first (bypasses SMTP port blocking)
+        if (sendGridEnabled) {
+            try {
+                log.info("Using SendGrid to send email to: {}", to);
+                sendGridEmailService.sendEmail(to, subject, text);
+                return;
+            } catch (Exception e) {
+                log.warn("SendGrid failed, falling back to SMTP: {}", e.getMessage());
+                // Fall through to SMTP
+            }
+        }
+
+        // Fallback to SMTP (will timeout if ports are blocked)
         try {
-            log.info("Sending email to: {} from: {}", to, fromEmail);
+            log.info("Sending email via SMTP to: {} from: {}", to, fromEmail);
 
             if (useMimeMessage) {
                 sendMimeEmail(to, subject, text);
@@ -90,8 +112,21 @@ public class EmailService {
             return;
         }
 
+        // Try SendGrid first
+        if (sendGridEnabled) {
+            try {
+                log.info("Using SendGrid to send HTML email to: {}", to);
+                sendGridEmailService.sendHtmlEmail(to, subject, htmlContent);
+                return;
+            } catch (Exception e) {
+                log.warn("SendGrid failed, falling back to SMTP: {}", e.getMessage());
+                // Fall through to SMTP
+            }
+        }
+
+        // Fallback to SMTP
         try {
-            log.info("Sending HTML email to: {} from: {}", to, fromEmail);
+            log.info("Sending HTML email via SMTP to: {} from: {}", to, fromEmail);
 
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
