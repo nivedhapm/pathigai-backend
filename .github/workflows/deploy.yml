@@ -33,30 +33,16 @@ jobs:
               git reset --hard origin/main
               
               # 2. Make sure the deployment script is executable
-              # The script is in the root directory: ./deploy-start.sh
+              # This should now work as long as the file is on the server
               chmod +x deploy-start.sh
               
-              # 3. 💡 Prepare the full string of Java arguments to pass to the script ($1)
-              JAVA_ARGS="\
-                -Dspring.datasource.url=${SPRING_DATASOURCE_URL} \
-                -Dspring.datasource.username=${SPRING_DATASOURCE_USERNAME} \
-                -Dspring.datasource.password=${SPRING_DATASOURCE_PASSWORD} \
-                -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
-                -Dapp.jwt.secret=${JWT_SECRET} \
-                -Dspring.mail.username=${EMAIL_USER} \
-                -Dspring.mail.password=${EMAIL_PASSWORD} \
-                -Dapp.sms.fast2sms.api-key=${FAST2SMS_API_KEY} \
-                -Dapp.sms.fast2sms.sender-id=${FAST2SMS_SENDER_ID} \
-                -Dapp.recaptcha.site-key=${RECAPTCHA_SITE_KEY} \
-                -Dapp.recaptcha.secret-key=${RECAPTCHA_SECRET_KEY} \
-                -Dapp.security.cors.allowed-origins=${CORS_ALLOWED_ORIGINS}"
+              # 3. Execute the script directly. 
+              # The variables are already available to this shell session.
+              echo "Executing deploy-start.sh..."
+              ./deploy-start.sh
               
-              # 4. 💡 Execute the script from the current directory, passing the arguments
-              # Note the explicit './deploy-start.sh' path.
-              ./deploy-start.sh "${JAVA_ARGS}"
-              
-              # The SSH session will now wait for the script to finish (15s sleep + build time)
-              # and then exit with the script's exit code (0), eliminating the Status 143 error.
+              # The script handles the rest: build, start, sleep, and log output.
+          
 
         env:
             # (Your existing env block remains unchanged)
