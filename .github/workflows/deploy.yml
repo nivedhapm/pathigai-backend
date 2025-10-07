@@ -49,17 +49,23 @@ jobs:
               export CORS_ALLOWED_ORIGINS="${CORS_ALLOWED_ORIGINS}"
               EOF
               
-              # 3. Make the script executable
+              # 3. DEBUGGING THE VARIABLE CONTENT
+              echo "--- STARTUP DEBUG: Checking critical variables ---"
+              echo "URL is: ${SPRING_DATASOURCE_URL}"
+              echo "User is: ${SPRING_DATASOURCE_USERNAME}"
+              echo "--- END DEBUG ---"
+              
+              # 4. Make the script executable
               chmod +x deploy-start.sh
               
-              # 4. Execute the script. It will now load the environment from the file.
+              # 5. Execute the script. It will now load the environment from the file.
               echo "Executing deploy-start.sh..."
               ./deploy-start.sh
           
 
         env:
             # (Your existing env block remains unchanged)
-            SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/pathigai_app?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+            SPRING_DATASOURCE_URL: jdbc:mysql://64.227.142.243:3306/pathigai_app?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
             SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
             SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
             # Security Variables
