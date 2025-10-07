@@ -27,7 +27,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     // CORS Configuration from properties
-    @Value("${app.security.cors.allowed-origins:http://localhost:3000,http://localhost:5173,https://pathigai.vercel.app/}")
+    @Value("${app.security.cors.allowed-origins:http://localhost:3000,http://localhost:5173,https://pathigai.vercel.app}")
     private String allowedOrigins;
 
     @Value("${app.security.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}")
