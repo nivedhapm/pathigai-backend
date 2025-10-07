@@ -22,9 +22,9 @@ fi
 echo "Starting application with injected configuration..."
 nohup java -jar ${APP_JAR} \
   --spring.profiles.active=prod \
-  --spring.datasource.url="${SPRING_DATASOURCE_URL}" \
-  --spring.datasource.username="${SPRING_DATASOURCE_USERNAME}" \
-  --spring.datasource.password="${SPRING_DATASOURCE_PASSWORD}" \
+  --spring.datasource.url="jdbc:mysql://64.227.142.243:3306/pathigai_app?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true" \
+  --spring.datasource.username="pathigai_user" \
+  --spring.datasource.password="Footprints-1" \
   --app.jwt.secret="${JWT_SECRET}" \
   --spring.mail.username="${EMAIL_USER}" \
   --spring.mail.password="${EMAIL_PASSWORD}" \
