@@ -17,8 +17,8 @@ echo "Starting application with injected configuration..."
 nohup java -jar ${APP_JAR} \
   --spring.profiles.active=prod \
   --spring.datasource.url="jdbc:mysql://localhost:3306/pathigai_app?useSSL=false&serverTimezone=UTC"\
-  --spring.datasource.username="${SPRING_DATASOURCE_USERNAME}" \
-  --spring.datasource.password="${SPRING_DATASOURCE_PASSWORD}" \
+  --spring.datasource.username="pathigai_user" \
+  --spring.datasource.password="vivo-v23-5g" \
   --spring.datasource.driver-class-name="com.mysql.cj.jdbc.Driver" \
   --spring.jpa.hibernate.ddl-auto=validate \
   --spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect \
