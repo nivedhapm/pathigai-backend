@@ -22,46 +22,56 @@ jobs:
       - name: Deploy to Droplet via SSH
         uses: appleboy/ssh-action@v0.1.8
         with:
-          host: ${{ secrets.DROPLET_IP }}
-          username: ${{ secrets.DROPLET_USER }}
-          key: ${{ secrets.DROPLET_SSH_KEY }}
-          port: 22
-          script: |
-            cd /home/deploy/pathigai-backend
-            git fetch origin
-            git reset --hard origin/main
-            pkill -f 'java -jar target/pathigai-0.0.1-SNAPSHOT.jar' || true
-            ./mvnw clean package -DskipTests
-            nohup java \
-              -Dspring.datasource.url=${SPRING_DATASOURCE_URL} \
-              -Dspring.datasource.username=${SPRING_DATASOURCE_USERNAME} \
-              -Dspring.datasource.password=${SPRING_DATASOURCE_PASSWORD} \
-              -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
-              -Dapp.jwt.secret=${JWT_SECRET} \
-              -Dspring.mail.username=${EMAIL_USER} \
-              -Dspring.mail.password=${EMAIL_PASSWORD} \
-              -Dapp.sms.fast2sms.api-key=${FAST2SMS_API_KEY} \
-              -Dapp.sms.fast2sms.sender-id=${FAST2SMS_SENDER_ID} \
-              -Dapp.recaptcha.site-key=${RECAPTCHA_SITE_KEY} \
-              -Dapp.recaptcha.secret-key=${RECAPTCHA_SECRET_KEY} \
-              -Dapp.security.cors.allowed-origins=${CORS_ALLOWED_ORIGINS} \
-              -jar target/pathigai-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
-            sleep 20 
-            tail -n 20 app.log
+            host: ${{ secrets.DROPLET_IP }}
+            username: ${{ secrets.DROPLET_USER }}
+            key: ${{ secrets.DROPLET_SSH_KEY }}
+            port: 22
+            script: |
+              # 1. Change directory and pull latest code
+              cd /home/deploy/pathigai-backend
+              git fetch origin
+              git reset --hard origin/main
+              
+              # 2. Make sure the deployment script is executable
+              # The script is in the root directory: ./deploy-start.sh
+              chmod +x deploy-start.sh
+              
+              # 3. 💡 Prepare the full string of Java arguments to pass to the script ($1)
+              JAVA_ARGS="\
+                -Dspring.datasource.url=${SPRING_DATASOURCE_URL} \
+                -Dspring.datasource.username=${SPRING_DATASOURCE_USERNAME} \
+                -Dspring.datasource.password=${SPRING_DATASOURCE_PASSWORD} \
+                -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
+                -Dapp.jwt.secret=${JWT_SECRET} \
+                -Dspring.mail.username=${EMAIL_USER} \
+                -Dspring.mail.password=${EMAIL_PASSWORD} \
+                -Dapp.sms.fast2sms.api-key=${FAST2SMS_API_KEY} \
+                -Dapp.sms.fast2sms.sender-id=${FAST2SMS_SENDER_ID} \
+                -Dapp.recaptcha.site-key=${RECAPTCHA_SITE_KEY} \
+                -Dapp.recaptcha.secret-key=${RECAPTCHA_SECRET_KEY} \
+                -Dapp.security.cors.allowed-origins=${CORS_ALLOWED_ORIGINS}"
+              
+              # 4. 💡 Execute the script from the current directory, passing the arguments
+              # Note the explicit './deploy-start.sh' path.
+              ./deploy-start.sh "${JAVA_ARGS}"
+              
+              # The SSH session will now wait for the script to finish (15s sleep + build time)
+              # and then exit with the script's exit code (0), eliminating the Status 143 error.
+
         env:
-          # Database Variables
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/pathigai_app?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          # Security Variables
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          CORS_ALLOWED_ORIGINS: ${{ vars.CORS_ALLOWED_ORIGINS || 'https://pathigai.vercel.app,http://localhost:3000 ,http://localhost:5173, http://localhost:5174,http://localhost:3306,http://localhost:8080'}}
-          # Email Variables
-          EMAIL_USER: ${{ secrets.EMAIL_USER }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-          # SMS Variables
-          FAST2SMS_API_KEY: ${{ secrets.FAST2SMS_API_KEY }}
-          FAST2SMS_SENDER_ID: ${{ secrets.FAST2SMS_SENDER_ID }}
-          # Recaptcha Variables
-          RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
-          RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+            # (Your existing env block remains unchanged)
+            SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/pathigai_app?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+            SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
+            SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+            # Security Variables
+            JWT_SECRET: ${{ secrets.JWT_SECRET }}
+            CORS_ALLOWED_ORIGINS: ${{ vars.CORS_ALLOWED_ORIGINS || 'https://pathigai.vercel.app,http://localhost:3000 ,http://localhost:5173, http://localhost:5174,http://localhost:3306,http://localhost:8080'}}
+            # Email Variables
+            EMAIL_USER: ${{ secrets.EMAIL_USER }}
+            EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+            # SMS Variables
+            FAST2SMS_API_KEY: ${{ secrets.FAST2SMS_API_KEY }}
+            FAST2SMS_SENDER_ID: ${{ secrets.FAST2SMS_SENDER_ID }}
+            # Recaptcha Variables
+            RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
+            RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
