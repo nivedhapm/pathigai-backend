@@ -45,7 +45,7 @@ jobs:
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-          SENDGRID_ENABLED: ${{ secrets.SENDGRID_ENABLED }}
+          SENDGRID_ENABLED: true
           FAST2SMS_API_KEY: ${{ secrets.FAST2SMS_API_KEY }}
           FAST2SMS_SENDER_ID: ${{ secrets.FAST2SMS_SENDER_ID }}
           RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}

@@ -49,6 +49,7 @@ echo "Deployment Summary:"
 echo "================================"
 echo "API URL: https://64.227.142.243/api/v1"
 echo "CORS Origins: ${CORS_ALLOWED_ORIGINS}"
+echo "SendGrid Enabled: ${SENDGRID_ENABLED}"
 echo "================================"
 echo ""
 
