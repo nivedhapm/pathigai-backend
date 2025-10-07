@@ -42,7 +42,7 @@ echo ""
 echo "================================"
 echo "Deployment Summary:"
 echo "================================"
-echo "API URL: http://64.227.142.243:8080/api/v1"
+echo "API URL: https://64.227.142.243/api/v1"
 echo "CORS Origins: ${CORS_ALLOWED_ORIGINS}"
 echo "================================"
 echo ""
@@ -51,7 +51,7 @@ sleep 5
 if pgrep -f "pathigai-0.0.1-SNAPSHOT.jar" > /dev/null; then
     echo "✅ Application is running successfully"
     echo "📝 Full logs: tail -f ~/app.log"
-    echo "🏥 Test health: curl http://localhost:8080/api/v1/auth/register"
+    echo "🏥 Test health: curl -k https://64.227.142.243/api/v1/health"
 else
     echo "❌ Application failed to start. Check logs:"
     tail -n 100 ~/app.log
