@@ -31,4 +31,5 @@ jobs:
           git pull origin main
           pkill -f 'java -jar' || true
           source ~/.bashrc
+          ./mvnw clean package -DskipTests
           nohup java -jar target/pathigai-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
