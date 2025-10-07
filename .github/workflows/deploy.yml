@@ -10,26 +10,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Java 21
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '21'
+      - name: Set up Java 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
 
-    - name: Deploy to Droplet via SSH
-      uses: appleboy/ssh-action@v0.1.8
-      with:
-        host: ${{ secrets.DROPLET_IP }}
-        username: ${{ secrets.DROPLET_USER }}
-        key: ${{ secrets.DROPLET_SSH_KEY }}
-        port: 22
-        script: |
-          cd ${{ secrets.REPO_DIR }}
-          git pull origin main
-          pkill -f 'java -jar' || true
-          source ~/.bashrc
-          ./mvnw clean package -DskipTests
-          nohup java -jar target/pathigai-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
+      - name: Deploy to Droplet via SSH
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.DROPLET_IP }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          port: 22
+          script: |
+            # Navigate to project folder
+            cd /home/deploy/pathigai-backend
+            
+            # Pull the latest changes from main
+            git fetch origin
+            git reset --hard origin/main
+            
+            # Stop any running Spring Boot application
+            pkill -f 'java -jar target/pathigai-0.0.1-SNAPSHOT.jar' || true
+            
+            # Load bash config (if needed)
+            source ~/.bashrc
+            
+            # Build the project without tests
+            ./mvnw clean package -DskipTests
+            
+            # Start the application in background and log output
+            nohup java -jar target/pathigai-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > app.log 2>&1 &
+            
+            # Optional: show last 10 lines of log to verify
+            tail -n 10 app.log
