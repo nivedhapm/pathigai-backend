@@ -1,6 +1,5 @@
 #!/bin/bash
-# This script relies on all configuration variables being EXPORTED
-# in the shell environment by the GitHub Actions script block.
+# This script ensures environment variables are explicitly passed to the Java process.
 
 APP_JAR="target/pathigai-0.0.1-SNAPSHOT.jar"
 
@@ -12,17 +11,27 @@ pkill -f "java -jar ${APP_JAR}" || true
 echo "Building new package with Maven..."
 ./mvnw clean package -DskipTests
 
-# 3. Start the application by letting Spring Boot read its own environment variables.
-# We DO NOT use -D properties here, as they are failing.
-# Spring Boot automatically maps capitalized and underscored ENV vars (e.g., SPRING_DATASOURCE_URL)
-# to its corresponding properties (spring.datasource.url).
-echo "Starting application, relying on exported ENV variables..."
-nohup java -jar ${APP_JAR} --spring.profiles.active=prod > app.log 2>&1 &
+# 3. Start the application using 'env' to explicitly provide the variables to the Java process.
+# This forces the variables to be available to Spring Boot.
+echo "Starting application with explicit ENV variables..."
+nohup env \
+  SPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL}" \
+  SPRING_DATASOURCE_USERNAME="${SPRING_DATASOURCE_USERNAME}" \
+  SPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD}" \
+  JWT_SECRET="${JWT_SECRET}" \
+  EMAIL_USER="${EMAIL_USER}" \
+  EMAIL_PASSWORD="${EMAIL_PASSWORD}" \
+  FAST2SMS_API_KEY="${FAST2SMS_API_KEY}" \
+  FAST2SMS_SENDER_ID="${FAST2SMS_SENDER_ID}" \
+  RECAPTCHA_SITE_KEY="${RECAPTCHA_SITE_KEY}" \
+  RECAPTCHA_SECRET_KEY="${RECAPTCHA_SECRET_KEY}" \
+  CORS_ALLOWED_ORIGINS="${CORS_ALLOWED_ORIGINS}" \
+  java -jar ${APP_JAR} --spring.profiles.active=prod > app.log 2>&1 &
 
 # 4. Wait for the application to start up and detach fully
 sleep 15
 
-# 5. Display the last 15 lines of the log for immediate feedback in GitHub Actions
+# 5. Display the last 15 lines of the log for immediate feedback
 echo "Deployment initiated. Showing startup logs (waiting 15s)..."
 tail -n 15 app.log
 
