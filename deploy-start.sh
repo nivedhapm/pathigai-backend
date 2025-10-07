@@ -1,6 +1,6 @@
 #!/bin/bash
-# Script to build and start the Spring Boot application.
-# It uses environment variables EXPORTED by the GitHub Action's shell.
+# This script relies on all configuration variables being EXPORTED
+# in the shell environment by the GitHub Actions script block.
 
 APP_JAR="target/pathigai-0.0.1-SNAPSHOT.jar"
 
@@ -12,23 +12,12 @@ pkill -f "java -jar ${APP_JAR}" || true
 echo "Building new package with Maven..."
 ./mvnw clean package -DskipTests
 
-# 3. Start the application with all environment variables explicitly
-# Crucially, we use the environment variables (e.g., $SPRING_DATASOURCE_URL)
-echo "Starting application with configuration..."
-nohup java \
-  -Dspring.datasource.url="${SPRING_DATASOURCE_URL}" \
-  -Dspring.datasource.username="${SPRING_DATASOURCE_USERNAME}" \
-  -Dspring.datasource.password="${SPRING_DATASOURCE_PASSWORD}" \
-  -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
-  -Dapp.jwt.secret="${JWT_SECRET}" \
-  -Dspring.mail.username="${EMAIL_USER}" \
-  -Dspring.mail.password="${EMAIL_PASSWORD}" \
-  -Dapp.sms.fast2sms.api-key="${FAST2SMS_API_KEY}" \
-  -Dapp.sms.fast2sms.sender-id="${FAST2SMS_SENDER_ID}" \
-  -Dapp.recaptcha.site-key="${RECAPTCHA_SITE_KEY}" \
-  -Dapp.recaptcha.secret-key="${RECAPTCHA_SECRET_KEY}" \
-  -Dapp.security.cors.allowed-origins="${CORS_ALLOWED_ORIGINS}" \
-  -jar ${APP_JAR} --spring.profiles.active=prod > app.log 2>&1 &
+# 3. Start the application by letting Spring Boot read its own environment variables.
+# We DO NOT use -D properties here, as they are failing.
+# Spring Boot automatically maps capitalized and underscored ENV vars (e.g., SPRING_DATASOURCE_URL)
+# to its corresponding properties (spring.datasource.url).
+echo "Starting application, relying on exported ENV variables..."
+nohup java -jar ${APP_JAR} --spring.profiles.active=prod > app.log 2>&1 &
 
 # 4. Wait for the application to start up and detach fully
 sleep 15
