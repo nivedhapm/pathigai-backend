@@ -1,7 +1,6 @@
 package com.nivedha.pathigai.user.services;
 
 import com.nivedha.pathigai.auth.entities.User;
-import com.nivedha.pathigai.auth.services.external.SendGridEmailService;
 import com.nivedha.pathigai.user.entities.EmailOutbox;
 import com.nivedha.pathigai.user.repositories.EmailOutboxRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ import java.util.List;
 public class UserEmailService {
 
     private final JavaMailSender mailSender;
-    private final SendGridEmailService sendGridEmailService;
     private final EmailOutboxRepository emailOutboxRepository;
 
     @Value("${app.mail.from:noreply@pathigai.com}")
@@ -35,9 +33,6 @@ public class UserEmailService {
 
     @Value("${app.mail.enabled:true}")
     private boolean emailEnabled;
-
-    @Value("${app.sendgrid.enabled:false}")
-    private boolean sendGridEnabled;
 
     /**
      * Send welcome email to newly created user
@@ -76,38 +71,12 @@ public class UserEmailService {
     }
 
     /**
-     * Send a queued email
+     * Send a queued email using JavaMailSender
      */
     @Transactional
     public void sendQueuedEmail(EmailOutbox emailOutbox) {
-        // Try SendGrid first (bypasses SMTP port blocking)
-        if (sendGridEnabled) {
-            try {
-                log.info("📤 Sending email via SendGrid to: {}", emailOutbox.getRecipientEmail());
-                sendGridEmailService.sendHtmlEmail(
-                    emailOutbox.getRecipientEmail(),
-                    emailOutbox.getSubject(),
-                    emailOutbox.getBody()
-                );
-
-                // Mark as sent
-                emailOutbox.setSent(true);
-                emailOutbox.setSentAt(LocalDateTime.now());
-                emailOutbox.setErrorMessage(null);
-                emailOutboxRepository.save(emailOutbox);
-
-                log.info("✅ Email sent successfully via SendGrid to: {}", emailOutbox.getRecipientEmail());
-                return;
-
-            } catch (Exception e) {
-                log.warn("⚠️ SendGrid failed, falling back to SMTP: {}", e.getMessage());
-                // Fall through to SMTP
-            }
-        }
-
-        // Fallback to SMTP
         try {
-            log.info("📤 Sending email via SMTP to: {}", emailOutbox.getRecipientEmail());
+            log.info("📤 Sending email via JavaMailSender to: {}", emailOutbox.getRecipientEmail());
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -125,7 +94,7 @@ public class UserEmailService {
             emailOutbox.setErrorMessage(null);
             emailOutboxRepository.save(emailOutbox);
 
-            log.info("✅ Email sent successfully via SMTP to: {}", emailOutbox.getRecipientEmail());
+            log.info("✅ Email sent successfully via JavaMailSender to: {}", emailOutbox.getRecipientEmail());
 
         } catch (Exception e) {
             log.error("❌ Failed to send email to {}: {}", emailOutbox.getRecipientEmail(), e.getMessage(), e);
