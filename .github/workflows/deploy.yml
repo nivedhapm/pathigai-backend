@@ -22,52 +22,29 @@ jobs:
       - name: Deploy to Droplet via SSH
         uses: appleboy/ssh-action@v0.1.8
         with:
-            host: ${{ secrets.DROPLET_IP }}
-            username: ${{ secrets.DROPLET_USER }}
-            key: ${{ secrets.DROPLET_SSH_KEY }}
-            port: 22
-            script: |
-              # 1. Change directory and pull latest code
-              cd /home/deploy/pathigai-backend
-              git fetch origin
-              git reset --hard origin/main
-              
-              # 2. 💡 EXPLICITLY EXPORT ALL REQUIRED ENVIRONMENT VARIABLES (MUST KEEP THIS)
-              export SPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL}"
-              export SPRING_DATASOURCE_USERNAME="${SPRING_DATASOURCE_USERNAME}"
-              export SPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD}"
-              
-              export JWT_SECRET="${JWT_SECRET}"
-              export EMAIL_USER="${EMAIL_USER}"
-              export EMAIL_PASSWORD="${EMAIL_PASSWORD}"
-              export FAST2SMS_API_KEY="${FAST2SMS_API_KEY}"
-              export FAST2SMS_SENDER_ID="${FAST2SMS_SENDER_ID}"
-              export RECAPTCHA_SITE_KEY="${RECAPTCHA_SITE_KEY}"
-              export RECAPTCHA_SECRET_KEY="${RECAPTCHA_SECRET_KEY}"
-              export CORS_ALLOWED_ORIGINS="${CORS_ALLOWED_ORIGINS}"
-              
-              # 3. Make the script executable
-              chmod +x deploy-start.sh
-              
-              # 4. Execute the script. 
-              echo "Executing deploy-start.sh..."
-              ./deploy-start.sh
-          
-
+          host: ${{ secrets.DROPLET_IP }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          port: 22
+          envs: SPRING_DATASOURCE_URL,SPRING_DATASOURCE_USERNAME,SPRING_DATASOURCE_PASSWORD,JWT_SECRET,EMAIL_USER,EMAIL_PASSWORD,FAST2SMS_API_KEY,FAST2SMS_SENDER_ID,RECAPTCHA_SITE_KEY,RECAPTCHA_SECRET_KEY,CORS_ALLOWED_ORIGINS
+          script: |
+            cd /home/deploy/pathigai-backend
+            git fetch origin
+            git reset --hard origin/main
+            
+            chmod +x deploy-start.sh
+            
+            echo "Executing deploy-start.sh..."
+            ./deploy-start.sh
         env:
-            # (Your existing env block remains unchanged)
-            SPRING_DATASOURCE_URL: jdbc:mysql://64.227.142.243:3306/pathigai_app?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-            SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
-            SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
-            # Security Variables
-            JWT_SECRET: ${{ secrets.JWT_SECRET }}
-            CORS_ALLOWED_ORIGINS: ${{ vars.CORS_ALLOWED_ORIGINS || 'https://pathigai.vercel.app,http://localhost:3000 ,http://localhost:5173, http://localhost:5174,http://localhost:3306,http://localhost:8080'}}
-            # Email Variables
-            EMAIL_USER: ${{ secrets.EMAIL_USER }}
-            EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-            # SMS Variables
-            FAST2SMS_API_KEY: ${{ secrets.FAST2SMS_API_KEY }}
-            FAST2SMS_SENDER_ID: ${{ secrets.FAST2SMS_SENDER_ID }}
-            # Recaptcha Variables
-            RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
-            RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/pathigai_app?useSSL=false&serverTimezone=UTC
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          CORS_ALLOWED_ORIGINS: https://pathigai.vercel.app,http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:3306,http://localhost:8080
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          FAST2SMS_API_KEY: ${{ secrets.FAST2SMS_API_KEY }}
+          FAST2SMS_SENDER_ID: ${{ secrets.FAST2SMS_SENDER_ID }}
+          RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
+          RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
