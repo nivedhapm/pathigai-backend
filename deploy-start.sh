@@ -16,9 +16,9 @@ fi
 echo "Starting application with environment variables from GitHub Actions..."
 nohup java -jar ${APP_JAR} \
   --spring.profiles.active=prod \
-  --spring.datasource.url="jdbc:mysql://localhost:3306/pathigai_app?useSSL=false&serverTimezone=UTC"\
-  --spring.datasource.username="pathigai_user" \
-  --spring.datasource.password="vivo-v23-5g" \
+  --spring.datasource.url="${SPRING_DATASOURCE_URL}" \
+  --spring.datasource.username="${SPRING_DATASOURCE_USERNAME}" \
+  --spring.datasource.password="${SPRING_DATASOURCE_PASSWORD}" \
   --spring.datasource.driver-class-name="com.mysql.cj.jdbc.Driver" \
   --spring.jpa.hibernate.ddl-auto=validate \
   --spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect \
@@ -28,8 +28,6 @@ nohup java -jar ${APP_JAR} \
   --spring.mail.properties.mail.smtp.connectiontimeout=90000 \
   --spring.mail.properties.mail.smtp.timeout=90000 \
   --spring.mail.properties.mail.smtp.writetimeout=90000 \
-  --app.sendgrid.api-key="${SENDGRID_API_KEY}" \
-  --app.sendgrid.enabled="${SENDGRID_ENABLED}" \
   --app.sms.fast2sms.api-key="${FAST2SMS_API_KEY}" \
   --app.sms.fast2sms.sender-id="${FAST2SMS_SENDER_ID}" \
   --app.recaptcha.site-key="${RECAPTCHA_SITE_KEY}" \
@@ -49,7 +47,6 @@ echo "Deployment Summary:"
 echo "================================"
 echo "API URL: https://64.227.142.243/api/v1"
 echo "CORS Origins: ${CORS_ALLOWED_ORIGINS}"
-echo "SendGrid Enabled: ${SENDGRID_ENABLED}"
 echo "================================"
 echo ""
 

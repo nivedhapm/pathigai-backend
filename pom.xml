@@ -104,13 +104,6 @@
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-
-		<!-- SendGrid Email API (bypasses SMTP) -->
-		<dependency>
-			<groupId>com.sendgrid</groupId>
-			<artifactId>sendgrid-java</artifactId>
-			<version>4.9.3</version>
-		</dependency>
 	</dependencies>
 
 	<build>
