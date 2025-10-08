@@ -260,6 +260,34 @@ public class UserManagementService {
     }
 
     /**
+     * Get all users in the company
+     */
+    public List<UserResponse> getAllUsers(User currentUser) {
+        try {
+            log.info("📋 Fetching all users for company: {}",
+                currentUser.getCompany() != null ? currentUser.getCompany().getCompanyName() : "Unknown");
+
+            // Fetch all users from the same company
+            List<User> users = userRepository.findByCompanyCompanyIdAndUserStatus(
+                currentUser.getCompany().getCompanyId(),
+                User.UserStatus.ACTIVE
+            );
+
+            // Convert to UserResponse DTOs
+            List<UserResponse> userResponses = users.stream()
+                .map(this::convertToUserResponse)
+                .collect(Collectors.toList());
+
+            log.info("✅ Found {} users in company", userResponses.size());
+            return userResponses;
+
+        } catch (Exception e) {
+            log.error("❌ Error fetching users: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
      * Find user by email (helper method for authentication)
      */
     public Optional<User> findUserByEmail(String email) {

@@ -90,6 +90,29 @@ public class UserManagementController {
     }
 
     /**
+     * Get all users in the company
+     * GET /api/v1/users
+     */
+    @GetMapping
+    public ResponseEntity<List<UserResponse>> getAllUsers(
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        try {
+            log.info("📋 Fetching all users for company");
+
+            User currentUser = getCurrentUser(userDetails);
+            List<UserResponse> users = userManagementService.getAllUsers(currentUser);
+
+            log.info("✅ Retrieved {} users", users.size());
+            return ResponseEntity.ok(users);
+
+        } catch (Exception e) {
+            log.error("❌ Error fetching users: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
+        }
+    }
+
+    /**
      * Get profiles that current user can create
      * GET /api/v1/profiles/allowed
      */
