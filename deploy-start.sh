@@ -1,4 +1,6 @@
 #!/bin/bash
+# Pathigai Backend Deployment Script
+# Last updated: October 8, 2025
 APP_JAR="target/pathigai-0.0.1-SNAPSHOT.jar"
 
 echo "Stopping existing application..."
