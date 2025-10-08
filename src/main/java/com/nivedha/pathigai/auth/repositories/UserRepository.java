@@ -44,9 +44,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     Optional<User> findByPhone(String phone);
 
-    // Get users by company and status
-    List<User> findByCompanyCompanyIdAndUserStatus(Integer companyId, User.UserStatus userStatus);
-
     // Get user with profile and role for authentication
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.primaryProfile LEFT JOIN FETCH u.primaryRole WHERE u.email = :email AND u.userStatus = :status")
     Optional<User> findByEmailAndUserStatusWithProfileAndRole(@Param("email") String email, @Param("status") User.UserStatus userStatus);
