@@ -23,8 +23,12 @@ nohup java -jar ${APP_JAR} \
   --spring.jpa.hibernate.ddl-auto=validate \
   --spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect \
   --app.jwt.secret="${JWT_SECRET}" \
-  --spring.mail.username="${EMAIL_USER}" \
-  --spring.mail.password="${EMAIL_PASSWORD}" \
+  --spring.mail.host="live.smtp.mailtrap.io" \
+  --spring.mail.port=2525 \
+  --spring.mail.username="${MAILTRAP_USERNAME}" \
+  --spring.mail.password="${MAILTRAP_PASSWORD}" \
+  --spring.mail.properties.mail.smtp.auth=true \
+  --spring.mail.properties.mail.smtp.starttls.enable=true \
   --spring.mail.properties.mail.smtp.connectiontimeout=90000 \
   --spring.mail.properties.mail.smtp.timeout=90000 \
   --spring.mail.properties.mail.smtp.writetimeout=90000 \
