@@ -1,8 +1,8 @@
-# Pathigai (பதிகை) - Backend API
-
 <div align="center">
 
-![Pathigai Logo](https://raw.githubusercontent.com/nivedhapm/pathigai-logo/main/pathigai-logo.png)
+<img src="https://raw.githubusercontent.com/nivedhapm/pathigai-logo/main/pathigai-logo.png" alt="Pathigai Logo" width="180"/>
+
+# Pathigai (பதிகை) - Backend API
 
 **Track. Train. Transform. | Guiding Every Step to Success.**
 
@@ -34,11 +34,40 @@ This is the backend API for **Pathigai** - a comprehensive multi-tenant training
 
 ---
 
+## Table of Contents
+
+- [Features](#features-implemented)
+  - [Module 1: Authentication & Authorization](#module-1-authentication--authorization)
+  - [Module 2: Multi-Tenant User Management](#module-2-multi-tenant-user-management)
+  - [Module 3: Email & Notification System](#module-3-email--notification-system)
+  - [Module 4: Dashboard & Navigation](#module-4-dashboard--navigation)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Building for Production](#building-for-production)
+- [API Endpoints](#api-endpoints)
+- [Request/Response Examples](#requestresponse-examples)
+- [Security Features](#security-features)
+- [Email System](#email-system)
+- [Database Schema](#database-schema)
+- [Configuration](#configuration)
+- [Deployment](#deployment)
+- [Testing](#testing)
+- [Roadmap & Upcoming Features](#roadmap--upcoming-features)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
+- [Acknowledgments](#acknowledgments)
+
+---
+
 ## Features (Implemented)
 
 ### Module 1: Authentication & Authorization
 
-#### **Signup Flow**
+#### Signup Flow
 - **Two-Step Registration Process**
   - Step 1: Basic user registration with email/phone
   - Step 2: Company creation and profile setup
@@ -51,7 +80,7 @@ This is the backend API for **Pathigai** - a comprehensive multi-tenant training
   - Real-time availability checking
   - Duplicate prevention at database level
 
-#### **Login & Session Management**
+#### Login & Session Management
 - **JWT-Based Stateless Authentication**
   - Access tokens (2 hours validity)
   - Refresh tokens (24 hours validity)
@@ -69,7 +98,7 @@ This is the backend API for **Pathigai** - a comprehensive multi-tenant training
   - Scheduled cleanup of expired sessions
   - Configurable cleanup intervals
 
-#### **Password Management**
+#### Password Management
 - **Secure Password Storage**
   - BCrypt encryption with 12 rounds
   - Salt generation per password
@@ -82,14 +111,14 @@ This is the backend API for **Pathigai** - a comprehensive multi-tenant training
   - Secure password reset process
   - Token expiration handling
 
-#### **reCAPTCHA Protection**
+#### reCAPTCHA Protection
 - Server-side Google reCAPTCHA v2 validation
 - Configurable enable/disable via properties
 - Bot protection on sensitive endpoints
 
 ### Module 2: Multi-Tenant User Management
 
-#### **Company Management**
+#### Company Management
 - **Multi-Tenant Architecture**
   - Company isolation at database level
   - Company creator designation
@@ -97,7 +126,7 @@ This is the backend API for **Pathigai** - a comprehensive multi-tenant training
   - Company-level user grouping
   - Cross-company access prevention
 
-#### **User Creation & Management**
+#### User Creation & Management
 - **Single User Creation**
   - Role and profile assignment
   - Automatic credential generation
@@ -112,7 +141,7 @@ This is the backend API for **Pathigai** - a comprehensive multi-tenant training
   - ACTIVE, INACTIVE, SUSPENDED states
   - Soft delete with timestamp tracking
 
-#### **Role & Profile System**
+#### Role & Profile System
 - **9 Predefined Roles**
   - ADMIN, MANAGER, HR, FACULTY, MENTOR
   - INTERVIEW_PANELIST, EMPLOYEE, TRAINEE, APPLICANT
@@ -124,14 +153,14 @@ This is the backend API for **Pathigai** - a comprehensive multi-tenant training
   - PLACEMENT (Level 5) - Placement operations
   - TRAINEE (Level 6) - Limited access
 - **Role-Profile Mapping Validation**
-  - SUPER_ADMIN can create: ADMIN, MANAGER, HR, FACULTY, MENTOR, INTERVIEW_PANELIST, EMPLOYEE, TRAINEE...(EVERYONE).
-  - ADMIN can create: MANAGER, HR, FACULTY, MENTOR, INTERVIEW_PANELIST,EMPLOYEE, TRAINEE.... (EVERYONE EXCEPT SUPER_ADMIN)
+  - SUPER_ADMIN can create: ADMIN, MANAGER, HR, FACULTY, MENTOR, INTERVIEW_PANELIST, EMPLOYEE, TRAINEE (EVERYONE)
+  - ADMIN can create: MANAGER, HR, FACULTY, MENTOR, INTERVIEW_PANELIST, EMPLOYEE, TRAINEE (EVERYONE EXCEPT SUPER_ADMIN)
   - MANAGEMENT can create: FACULTY, MENTOR, INTERVIEW_PANELIST, EMPLOYEE, TRAINEE
   - Hierarchical permission enforcement
 
 ### Module 3: Email & Notification System
 
-#### **Email Service Architecture**
+#### Email Service Architecture
 - **Dual Email Provider Support**
   - **Development**: Gmail SMTP (Port 587, STARTTLS)
   - **Production**: Mailtrap SMTP (Port 2525)
@@ -151,7 +180,7 @@ This is the backend API for **Pathigai** - a comprehensive multi-tenant training
   - Embedded credentials box
   - Security notes and instructions
 
-#### **SMS Service**
+#### SMS Service
 - **Fast2SMS Integration**
   - OTP delivery via SMS
   - Configurable sender ID
@@ -160,7 +189,7 @@ This is the backend API for **Pathigai** - a comprehensive multi-tenant training
 
 ### Module 4: Dashboard & Navigation
 
-#### **Dynamic Navigation**
+#### Dynamic Navigation
 - **Role-Based Menu Items**
   - Navigation links based on user profile
   - Hierarchical menu structure
@@ -170,7 +199,7 @@ This is the backend API for **Pathigai** - a comprehensive multi-tenant training
   - Session information
   - Activity summaries
 
-#### **Profile Management**
+#### Profile Management
 - **Profile Hierarchy Endpoint**
   - Ordered by hierarchy level
   - Profile descriptions
@@ -641,49 +670,49 @@ Authorization: Bearer <token>
 
 ## Security Features
 
-### 1. **Authentication Security**
+### 1. Authentication Security
 - JWT tokens with HMAC-SHA256 signing
 - Access token expiry: 2 hours
 - Refresh token expiry: 24 hours
 - Token rotation on refresh
 - Secure token storage in session table
 
-### 2. **Password Security**
+### 2. Password Security
 - BCrypt hashing with 12 rounds
 - Automatic salt generation
 - Temporary password enforcement
 - Password complexity validation
 - Last password reset tracking
 
-### 3. **Session Security**
+### 3. Session Security
 - Device fingerprinting for unique identification
 - Maximum 3 concurrent sessions per user
 - IP address and User-Agent tracking
 - Automatic cleanup of expired sessions
 - Session version tracking for token invalidation
 
-### 4. **API Security**
+### 4. API Security
 - CORS configuration with allowed origins
 - Request validation with Bean Validation
 - SQL injection prevention via JPA
 - XSS protection with input sanitization
 - Rate limiting (planned)
 
-### 5. **Verification Security**
+### 5. Verification Security
 - OTP with 2-minute expiry
 - Maximum 3 verification attempts
 - Maximum 3 OTP resends
 - BCrypt-hashed OTP storage
 - Context-based verification (Signup/Login/Reset)
 
-### 6. **Bot Protection**
+### 6. Bot Protection
 - Google reCAPTCHA v2 integration
 - Server-side validation
 - Configurable threshold scoring
 
 ---
 
-## 📧 Email System
+## Email System
 
 ### Email Providers
 
@@ -740,7 +769,8 @@ Authorization: Bearer <token>
 
 ### Core Tables
 
-#### **users**
+#### users
+
 ```sql
 - user_id (PK, Auto Increment)
 - email (Unique, Indexed)
@@ -763,7 +793,8 @@ Authorization: Bearer <token>
 - created_at, updated_at, deleted_at (Timestamps)
 ```
 
-#### **companies**
+#### companies
+
 ```sql
 - company_id (PK, Auto Increment)
 - company_name
@@ -772,14 +803,16 @@ Authorization: Bearer <token>
 - created_at (Timestamp)
 ```
 
-#### **roles**
+#### roles
+
 ```sql
 - role_id (PK, Auto Increment)
 - name (Unique: ADMIN, MANAGER, HR, FACULTY, MENTOR, 
        INTERVIEW_PANELIST, EMPLOYEE, TRAINEE, APPLICANT)
 ```
 
-#### **profiles**
+#### profiles
+
 ```sql
 - profile_id (PK, Auto Increment)
 - name (Unique: SUPER_ADMIN, ADMIN, MANAGEMENT, TRAINER, PLACEMENT, TRAINEE)
@@ -787,7 +820,8 @@ Authorization: Bearer <token>
 - hierarchy_level (1-6)
 ```
 
-#### **sessions**
+#### sessions
+
 ```sql
 - session_id (PK, Auto Increment)
 - user_id (FK -> users)
@@ -805,7 +839,8 @@ Authorization: Bearer <token>
 - UNIQUE CONSTRAINT (user_id, device_fingerprint)
 ```
 
-#### **verifications**
+#### verifications
+
 ```sql
 - verification_id (PK, Auto Increment)
 - user_id (FK -> users)
@@ -819,7 +854,8 @@ Authorization: Bearer <token>
 - created_at (Timestamp)
 ```
 
-#### **email_outbox**
+#### email_outbox
+
 ```sql
 - email_id (PK, Auto Increment)
 - recipient_email
@@ -837,11 +873,12 @@ Authorization: Bearer <token>
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Application Properties
 
 **Development (`application.properties`)**
+
 ```properties
 # Server
 server.port=8080
@@ -883,10 +920,11 @@ app.recaptcha.secret-key=${RECAPTCHA_SECRET_KEY}
 app.recaptcha.enabled=true
 
 # CORS
-app.security.cors.allowed-origins=http://localhost:3306,http://localhost:5173,https://pathigai.vercel.app , https://pathigai.app
+app.security.cors.allowed-origins=http://localhost:3306,http://localhost:5173,https://pathigai.vercel.app,https://pathigai.app
 ```
 
 **Production (`application-prod.properties`)**
+
 ```properties
 # Mail (Mailtrap)
 spring.mail.host=live.smtp.mailtrap.io
@@ -952,6 +990,7 @@ sudo nano /etc/systemd/system/pathigai.service
 ```
 
 **pathigai.service:**
+
 ```ini
 [Unit]
 Description=Pathigai Spring Boot Application
@@ -983,6 +1022,7 @@ sudo nano /etc/nginx/sites-available/pathigai
 ```
 
 **nginx configuration:**
+
 ```nginx
 server {
     listen 80;
@@ -1026,6 +1066,7 @@ sudo ufw enable
 ### GitHub Actions CI/CD
 
 **Deployment Script (`deploy-start.sh`)**
+
 ```bash
 #!/bin/bash
 # Automated deployment script
@@ -1069,9 +1110,10 @@ Report available at: `target/site/jacoco/index.html`
 
 ## Roadmap & Upcoming Features
 
-### 🔄 In Progress
-- [ ] User profile update and delete operations
-- [ ] User search and filtering
+### In Progress
+
+- User profile update and delete operations
+- User search and filtering
 
 ### Planned Features
 
@@ -1128,6 +1170,7 @@ This project is currently in active development. Contributions are welcome from 
    ```
 5. Open a Pull Request to `dev` branch
 
+---
 
 ## License
 
@@ -1145,7 +1188,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Project Links:**
 - Backend Repository: [pathigai-backend](https://github.com/nivedhapm/pathigai-backend)
 - Frontend Repository: [pathigai-frontend](https://github.com/nivedhapm/pathigai-frontend)
-- Live Application: [pathigai.vercel.app](https://pathigai.app)
+- Live Application: [pathigai.app](https://pathigai.app)
 - API Endpoint: [64.227.142.243/api/v1](https://64.227.142.243/api/v1)
 
 ---
@@ -1165,7 +1208,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made for comprehensive training management**
 
-⭐ Star this repo if you find it helpful!
+Star this repo if you find it helpful!
 
 </div>
-
