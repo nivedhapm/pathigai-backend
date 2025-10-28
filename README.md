@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/nivedhapm/pathigai-logo/main/pathigai-logo.png" alt="Pathigai Logo" width="180"/>
+<img src="https://raw.githubusercontent.com/nivedhapm/pathigai-logo/main/pathigai-logo.png" alt="Pathigai Logo" width="80"/>
 
 # Pathigai (பதிகை) - Backend API
 
