@@ -227,7 +227,7 @@ This is the backend API for **Pathigai** - a comprehensive multi-tenant training
 | **Fast2SMS** | API | SMS OTP delivery |
 | **Lombok** | 1.18.38 | Boilerplate code reduction |
 | **Maven** | 3.8+ | Dependency management |
-| **WebFlux** | 6.x | Reactive REST client (reCAPTCHA) |
+| **Google reCAPTCHA** | v2 | Bot prevention & form validation (verifies human users)|
 
 ---
 
